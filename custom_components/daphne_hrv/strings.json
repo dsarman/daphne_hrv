@@ -22,6 +22,9 @@
     }
   },
   "entity": {
+    "climate": {
+      "temperature_control": { "name": null }
+    },
     "binary_sensor": {
       "running": { "name": "Running" },
       "error": { "name": "Error" },
