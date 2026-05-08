@@ -1,0 +1,13 @@
+{
+  "domain": "daphne_hrv",
+  "name": "2VV Daphne HRV",
+  "version": "0.1.0",
+  "codeowners": ["@dsarman"],
+  "config_flow": true,
+  "documentation": "https://github.com/dsarman/daphne_hrv",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/dsarman/daphne_hrv/issues",
+  "loggers": ["pymodbus", "custom_components.daphne_hrv"],
+  "requirements": ["pymodbus>=3.11.1,<3.12"]
+}

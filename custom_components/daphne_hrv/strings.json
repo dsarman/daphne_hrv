@@ -1,0 +1,55 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Daphne HRV",
+        "description": "Enter the Modbus TCP connection details for your 2VV Daphne unit. The IP and port are configured on the unit's controller under service menu code 1616 \u2192 menu 21 (Network).",
+        "data": {
+          "name": "Name",
+          "host": "Host (IP address)",
+          "port": "Port",
+          "slave": "Modbus slave/unit ID"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the unit. Check the IP, port and that the unit is on the network.",
+      "invalid_device": "Connected, but the device did not respond as expected. Verify the slave ID.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This Daphne unit is already configured."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "running": { "name": "Running" },
+      "error": { "name": "Error" }
+    },
+    "sensor": {
+      "outdoor_temp": { "name": "Outdoor temperature" },
+      "exhaust_temp": { "name": "Exhaust air temperature" },
+      "supply_temp": { "name": "Supply air temperature" },
+      "extract_temp": { "name": "Extract air temperature" },
+      "water_return_temp": { "name": "Water return temperature" },
+      "room_temp": { "name": "Room temperature" },
+      "heater_output": { "name": "Heater output" },
+      "filter_condition": { "name": "Filter condition" },
+      "filter_wear": { "name": "Filter wear" },
+      "filter_hours": { "name": "Filter hours" },
+      "filter_hours_limit": { "name": "Filter hours limit" },
+      "status_word": { "name": "Status word (raw)" },
+      "error_word": { "name": "Error word (raw)" },
+      "sensor_status": { "name": "Sensor status (raw)" },
+      "sub_status": { "name": "Sub status (raw)" }
+    },
+    "switch": {
+      "power": { "name": "Power" },
+      "night_mode": { "name": "Night mode" }
+    },
+    "number": {
+      "fan_speed": { "name": "Fan speed" },
+      "temp_setpoint": { "name": "Temperature setpoint" }
+    }
+  }
+}
