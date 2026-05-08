@@ -58,7 +58,7 @@ The integration will probe the connection during setup; if it fails, check the I
 
 ## Status-word decoding
 
-The Daphne exposes some state as bitmasks in registers `18000` (`status_word`) and `18005` (`sub_status`). Bit 0 of `status_word` is verified as **running**. Other bits are not yet documented for this firmware — capture the raw value while toggling features on the controller and share your findings via an issue/PR.
+The Daphne exposes some state as bitmasks in registers `18000` (`status_word`) and `18003` (`sensor_status`). Bit 0 of `status_word` is verified as **running**. Other bits are not yet documented for this firmware — capture the raw value while toggling features on the controller and share your findings via an issue/PR.
 
 ## Roadmap
 

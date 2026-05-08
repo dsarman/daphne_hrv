@@ -27,12 +27,13 @@
       "error": { "name": "Error" }
     },
     "sensor": {
-      "outdoor_temp": { "name": "Outdoor temperature" },
-      "exhaust_temp": { "name": "Exhaust air temperature" },
+      "outdoor_temp": { "name": "Outside air temperature" },
+      "exhaust_temp": { "name": "Outgoing air temperature" },
       "supply_temp": { "name": "Supply air temperature" },
       "extract_temp": { "name": "Extract air temperature" },
       "water_return_temp": { "name": "Water return temperature" },
       "room_temp": { "name": "Room temperature" },
+      "bypass_position": { "name": "Bypass position" },
       "heater_output": { "name": "Heater output" },
       "filter_condition": { "name": "Filter condition" },
       "filter_wear": { "name": "Filter wear" },
@@ -40,8 +41,7 @@
       "filter_hours_limit": { "name": "Filter hours limit" },
       "status_word": { "name": "Status word (raw)" },
       "error_word": { "name": "Error word (raw)" },
-      "sensor_status": { "name": "Sensor status (raw)" },
-      "sub_status": { "name": "Sub status (raw)" }
+      "sensor_status": { "name": "Sensor status (raw)" }
     },
     "switch": {
       "power": { "name": "Power" },

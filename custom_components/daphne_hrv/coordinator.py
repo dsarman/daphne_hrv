@@ -25,6 +25,7 @@ from pymodbus.exceptions import ModbusException
 
 from .const import (
     CONF_SLAVE,
+    DATA_BYPASS_POSITION,
     DATA_ERROR_WORD,
     DATA_EXHAUST_TEMP,
     DATA_EXTRACT_TEMP,
@@ -40,7 +41,6 @@ from .const import (
     DATA_ROOM_TEMP,
     DATA_SENSOR_STATUS,
     DATA_STATUS_WORD,
-    DATA_SUB_STATUS,
     DATA_SUPPLY_TEMP,
     DATA_TEMP_SETPOINT,
     DATA_WATER_RETURN_TEMP,
@@ -51,8 +51,11 @@ from .const import (
     HOLDING_BLOCK_21K_START,
     HOLDING_BLOCK_25K_COUNT,
     HOLDING_BLOCK_25K_START,
-    INPUT_BLOCK_COUNT,
-    INPUT_BLOCK_START,
+    INPUT_BLOCK_15K_COUNT,
+    INPUT_BLOCK_15K_START,
+    INPUT_BLOCK_18K_COUNT,
+    INPUT_BLOCK_18K_START,
+    REG_BYPASS_POSITION,
     REG_ERROR_WORD,
     REG_EXHAUST_TEMP,
     REG_EXTRACT_TEMP,
@@ -68,7 +71,6 @@ from .const import (
     REG_ROOM_TEMP,
     REG_SENSOR_STATUS,
     REG_STATUS_WORD,
-    REG_SUB_STATUS,
     REG_SUPPLY_TEMP,
     REG_TEMP_SETPOINT,
     REG_WATER_RETURN_TEMP,
@@ -137,8 +139,11 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if not self._client.connected:
                     await self._client.connect()
 
-                inputs = await self._read_input_registers(
-                    INPUT_BLOCK_START, INPUT_BLOCK_COUNT
+                inputs_15k = await self._read_input_registers(
+                    INPUT_BLOCK_15K_START, INPUT_BLOCK_15K_COUNT
+                )
+                inputs_18k = await self._read_input_registers(
+                    INPUT_BLOCK_18K_START, INPUT_BLOCK_18K_COUNT
                 )
                 holdings_21k = await self._read_holding_registers(
                     HOLDING_BLOCK_21K_START, HOLDING_BLOCK_21K_COUNT
@@ -149,7 +154,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except ModbusException as err:
                 raise UpdateFailed(f"Modbus error: {err}") from err
 
-        return self._parse(inputs, holdings_21k, holdings_25k)
+        return self._parse(inputs_15k, inputs_18k, holdings_21k, holdings_25k)
 
     async def _read_input_registers(self, address: int, count: int) -> list[int]:
         result = await self._client.read_input_registers(
@@ -169,14 +174,18 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _parse(
         self,
-        inputs: list[int],
+        inputs_15k: list[int],
+        inputs_18k: list[int],
         h21k: list[int],
         h25k: list[int],
     ) -> dict[str, Any]:
         """Map the three raw register blocks into the coordinator data dict."""
 
-        def i(reg: int) -> int:
-            return inputs[reg - INPUT_BLOCK_START]
+        def i15(reg: int) -> int:
+            return inputs_15k[reg - INPUT_BLOCK_15K_START]
+
+        def i18(reg: int) -> int:
+            return inputs_18k[reg - INPUT_BLOCK_18K_START]
 
         def h21(reg: int) -> int:
             return h21k[reg - HOLDING_BLOCK_21K_START]
@@ -186,21 +195,21 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         return {
             # Status / diagnostics
-            DATA_STATUS_WORD: i(REG_STATUS_WORD),
-            DATA_ERROR_WORD: i(REG_ERROR_WORD),
-            DATA_SENSOR_STATUS: i(REG_SENSOR_STATUS),
-            DATA_SUB_STATUS: i(REG_SUB_STATUS),
+            DATA_STATUS_WORD: i18(REG_STATUS_WORD),
+            DATA_ERROR_WORD: i18(REG_ERROR_WORD),
+            DATA_SENSOR_STATUS: i18(REG_SENSOR_STATUS),
+            DATA_BYPASS_POSITION: i15(REG_BYPASS_POSITION),
             # Temperatures (signed, ÷10 → °C)
-            DATA_OUTDOOR_TEMP: _to_int16(i(REG_OUTDOOR_TEMP)) / 10.0,
-            DATA_EXHAUST_TEMP: _to_int16(i(REG_EXHAUST_TEMP)) / 10.0,
-            DATA_SUPPLY_TEMP: _to_int16(i(REG_SUPPLY_TEMP)) / 10.0,
-            DATA_EXTRACT_TEMP: _to_int16(i(REG_EXTRACT_TEMP)) / 10.0,
-            DATA_WATER_RETURN_TEMP: _to_int16(i(REG_WATER_RETURN_TEMP)) / 10.0,
-            DATA_ROOM_TEMP: _to_int16(i(REG_ROOM_TEMP)) / 10.0,
+            DATA_OUTDOOR_TEMP: _to_int16(i18(REG_OUTDOOR_TEMP)) / 10.0,
+            DATA_EXHAUST_TEMP: _to_int16(i18(REG_EXHAUST_TEMP)) / 10.0,
+            DATA_SUPPLY_TEMP: _to_int16(i18(REG_SUPPLY_TEMP)) / 10.0,
+            DATA_EXTRACT_TEMP: _to_int16(i18(REG_EXTRACT_TEMP)) / 10.0,
+            DATA_WATER_RETURN_TEMP: _to_int16(i18(REG_WATER_RETURN_TEMP)) / 10.0,
+            DATA_ROOM_TEMP: _to_int16(i18(REG_ROOM_TEMP)) / 10.0,
             # Outputs / wear
-            DATA_HEATER_OUTPUT: i(REG_HEATER_OUTPUT),
-            DATA_FILTER_CONDITION: i(REG_FILTER_CONDITION),
-            DATA_FILTER_WEAR: i(REG_FILTER_WEAR),
+            DATA_HEATER_OUTPUT: i18(REG_HEATER_OUTPUT),
+            DATA_FILTER_CONDITION: i18(REG_FILTER_CONDITION),
+            DATA_FILTER_WEAR: i18(REG_FILTER_WEAR),
             # Setpoints / mode
             DATA_POWER: bool(h21(REG_POWER)),
             DATA_FAN_SPEED: h21(REG_FAN_SPEED) / 10.0,  # ‰ → %

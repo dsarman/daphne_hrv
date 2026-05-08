@@ -23,14 +23,14 @@ CONF_SLAVE: Final = "slave"
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Input registers (function code 0x04, read-only)
+REG_BYPASS_POSITION: Final = 15040  # uint16, 0-100 % (STATUS_AHU)
 REG_STATUS_WORD: Final = 18000  # bitmask: bit 0 = unit running
 REG_ERROR_WORD: Final = 18001  # bitmask: any non-zero = error
 REG_SENSOR_STATUS: Final = 18003  # bitmask: bit per sensor OK/ERROR
-REG_SUB_STATUS: Final = 18005  # additional state bits (mode, etc.)
+REG_EXHAUST_TEMP: Final = 18005  # int16, ÷10 → °C (exhaust going outside)
 REG_OUTDOOR_TEMP: Final = 18006  # int16, ÷10 → °C
-REG_EXHAUST_TEMP: Final = 18007  # int16, ÷10 → °C (exhaust leaving building)
-REG_SUPPLY_TEMP: Final = 18008  # int16, ÷10 → °C (supply after HRX)
-REG_EXTRACT_TEMP: Final = 18009  # int16, ÷10 → °C (extract from rooms)
+REG_EXTRACT_TEMP: Final = 18007  # int16, ÷10 → °C (extract from rooms)
+REG_SUPPLY_TEMP: Final = 18008  # int16, ÷10 → °C (supply into house)
 REG_WATER_RETURN_TEMP: Final = 18010  # int16, ÷10 → °C (only if water heater)
 REG_ROOM_TEMP: Final = 18011  # int16, ÷10 → °C (only if CT-ROOM sensor)
 REG_HEATER_OUTPUT: Final = 18013  # uint16, 0-100 %
@@ -48,13 +48,17 @@ REG_FILTER_HOURS_LIMIT: Final = 25019  # uint16: hours
 # ─────────────────────────────────────────────────────────────────────────────
 # Bulk read configuration. The coordinator reads two contiguous register
 # blocks per cycle to minimise TCP round-trips:
-#   - Input block:  18000..18016 (17 regs)
+#   - Input 15k:    15040..15040 (1 reg)
+#   - Input 18k:    18000..18016 (17 regs)
 #   - Holding 21k:  21000..21009 (10 regs)
 #   - Holding 25k:  25018..25019 (2 regs)
 # ─────────────────────────────────────────────────────────────────────────────
 
-INPUT_BLOCK_START: Final = 18000
-INPUT_BLOCK_COUNT: Final = 17
+INPUT_BLOCK_15K_START: Final = 15040
+INPUT_BLOCK_15K_COUNT: Final = 1
+
+INPUT_BLOCK_18K_START: Final = 18000
+INPUT_BLOCK_18K_COUNT: Final = 17
 
 HOLDING_BLOCK_21K_START: Final = 21000
 HOLDING_BLOCK_21K_COUNT: Final = 10
@@ -74,7 +78,7 @@ STATUS_BIT_RUNNING: Final = 1 << 0  # 0x0001 — verified
 DATA_STATUS_WORD: Final = "status_word"
 DATA_ERROR_WORD: Final = "error_word"
 DATA_SENSOR_STATUS: Final = "sensor_status"
-DATA_SUB_STATUS: Final = "sub_status"
+DATA_BYPASS_POSITION: Final = "bypass_position"
 DATA_OUTDOOR_TEMP: Final = "outdoor_temp"
 DATA_EXHAUST_TEMP: Final = "exhaust_temp"
 DATA_SUPPLY_TEMP: Final = "supply_temp"

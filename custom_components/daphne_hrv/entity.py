@@ -27,8 +27,3 @@ class DaphneEntity(CoordinatorEntity[DaphneHRVCoordinator]):
             model=MODEL,
             configuration_url=f"http://{coordinator.host}",
         )
-
-    @property
-    def available(self) -> bool:
-        """Available if the last coordinator update succeeded."""
-        return super().available and self.coordinator.data is not None

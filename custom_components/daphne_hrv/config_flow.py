@@ -17,7 +17,7 @@ from .const import (
     DEFAULT_PORT,
     DEFAULT_SLAVE,
     DOMAIN,
-    INPUT_BLOCK_START,
+    INPUT_BLOCK_18K_START,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ async def _async_test_connection(host: str, port: int, slave: int) -> None:
         if not await client.connect():
             raise CannotConnect(f"TCP connect to {host}:{port} failed")
         result = await client.read_input_registers(
-            address=INPUT_BLOCK_START, count=1, device_id=slave
+            address=INPUT_BLOCK_18K_START, count=1, device_id=slave
         )
         if result.isError():
             raise InvalidDevice(f"Modbus probe returned error: {result}")
