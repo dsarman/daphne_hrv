@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DaphneHRVConfigEntry) ->
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+    _ = entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
 
 
@@ -44,4 +44,4 @@ async def _async_update_listener(
     hass: HomeAssistant, entry: DaphneHRVConfigEntry
 ) -> None:
     """Reload the entry when its options change."""
-    await hass.config_entries.async_reload(entry.entry_id)
+    _ = await hass.config_entries.async_reload(entry.entry_id)

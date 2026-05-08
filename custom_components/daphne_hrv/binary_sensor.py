@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import cast
+from typing import override, cast
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -25,20 +25,20 @@ from .const import (
     MODEL,
     STATUS_BIT_RUNNING,
 )
-from .coordinator import DaphneHRVCoordinator
+from .coordinator import DaphneHRVCoordinator, DaphneHRVData
 
 
 @dataclass(frozen=True, kw_only=True)
 class DaphneBinarySensorDescription(BinarySensorEntityDescription):
     """Binary sensor description with a predicate over coordinator data."""
 
-    is_on_fn: Callable[[dict[str, object]], bool | None]
+    is_on_fn: Callable[[DaphneHRVData], bool | None]
 
 
-def _status_bit_is_set(key: str, bit: int) -> Callable[[dict[str, object]], bool]:
+def _status_bit_is_set(key: str, bit: int) -> Callable[[DaphneHRVData], bool]:
     """Return a predicate that checks a bit in an integer coordinator value."""
 
-    def _read(data: dict[str, object]) -> bool:
+    def _read(data: DaphneHRVData) -> bool:
         value = data.get(key)
         return isinstance(value, int) and bool(value & bit)
 
@@ -79,6 +79,7 @@ class DaphneBinarySensor(BinarySensorEntity):
     """A Daphne binary sensor backed by the coordinator."""
 
     coordinator: DaphneHRVCoordinator
+    entity_description: BinarySensorEntityDescription
     _description: DaphneBinarySensorDescription
 
     def __init__(
@@ -90,12 +91,12 @@ class DaphneBinarySensor(BinarySensorEntity):
         self.coordinator = coordinator
         self.entity_description = cast(BinarySensorEntityDescription, description)
         self._description = description
-        self._attr_has_entity_name = True
-        self._attr_should_poll = False
-        self._attr_available = coordinator.last_update_success
+        self._attr_has_entity_name: bool = True
+        self._attr_should_poll: bool = False
+        self._attr_available: bool = coordinator.last_update_success
         entry = coordinator.config_entry
-        self._attr_unique_id = f"{entry.entry_id}_{description.key}"
-        self._attr_device_info = DeviceInfo(
+        self._attr_unique_id: str | None = f"{entry.entry_id}_{description.key}"
+        self._attr_device_info: DeviceInfo | None = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name=entry.title,
             manufacturer=MANUFACTURER,
@@ -105,8 +106,11 @@ class DaphneBinarySensor(BinarySensorEntity):
         self._update_is_on()
 
     def _update_is_on(self) -> None:
-        self._attr_is_on = self._description.is_on_fn(self.coordinator.data or {})
+        self._attr_is_on: bool | None = self._description.is_on_fn(
+            self.coordinator.data or {}
+        )
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to coordinator updates when Home Assistant adds the entity."""
         await super().async_added_to_hass()

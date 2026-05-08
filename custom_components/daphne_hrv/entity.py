@@ -12,15 +12,15 @@ from .coordinator import DaphneHRVCoordinator
 class DaphneEntity(CoordinatorEntity[DaphneHRVCoordinator]):
     """Common base: shared device_info, unique_id scheme and availability."""
 
-    _attr_has_entity_name = True
+    _attr_has_entity_name: bool = True
 
     def __init__(self, coordinator: DaphneHRVCoordinator, key: str) -> None:
         """Bind the entity to the coordinator and a stable key."""
         super().__init__(coordinator)
-        self._key = key
+        self._key: str = key
         entry = coordinator.config_entry
-        self._attr_unique_id = f"{entry.entry_id}_{key}"
-        self._attr_device_info = DeviceInfo(
+        self._attr_unique_id: str | None = f"{entry.entry_id}_{key}"
+        self._attr_device_info: DeviceInfo | None = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name=entry.title,
             manufacturer=MANUFACTURER,

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import override, cast
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
@@ -56,20 +56,22 @@ async def _async_test_connection(host: str, port: int, slave: int) -> None:
 class DaphneHRVConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Daphne HRV."""
 
-    VERSION = 1
+    VERSION: int = 1
 
+    @override
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, object] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial UI step."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            host = user_input[CONF_HOST]
-            port = user_input[CONF_PORT]
-            slave = user_input[CONF_SLAVE]
+            host = cast(str, user_input[CONF_HOST])
+            port = cast(int, user_input[CONF_PORT])
+            slave = cast(int, user_input[CONF_SLAVE])
+            name = cast(str, user_input[CONF_NAME])
 
-            await self.async_set_unique_id(f"{host}:{port}:{slave}")
+            _ = await self.async_set_unique_id(f"{host}:{port}:{slave}")
             self._abort_if_unique_id_configured()
 
             try:
@@ -83,7 +85,7 @@ class DaphneHRVConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=user_input
+                    title=name, data=user_input
                 )
 
         return self.async_show_form(

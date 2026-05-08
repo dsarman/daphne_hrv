@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal
-from typing import cast
+from typing import override, cast
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.components.sensor.const import SensorDeviceClass, SensorStateClass
@@ -36,18 +37,18 @@ from .const import (
     MANUFACTURER,
     MODEL,
 )
-from .coordinator import DaphneHRVCoordinator
+from .coordinator import DaphneHRVCoordinator, DaphneHRVData
 
 
 @dataclass(frozen=True, kw_only=True)
 class DaphneSensorDescription(SensorEntityDescription):
     """Sensor description with a value extractor over coordinator data."""
 
-    value_fn: Callable[[dict[str, object]], StateType | Decimal]
+    value_fn: Callable[[DaphneHRVData], StateType | Decimal]
 
 
-def _native_value(key: str) -> Callable[[dict[str, object]], StateType | Decimal]:
-    def _read(data: dict[str, object]) -> StateType | Decimal:
+def _native_value(key: str) -> Callable[[DaphneHRVData], StateType | Decimal]:
+    def _read(data: DaphneHRVData) -> StateType | Decimal:
         value = data.get(key)
         if isinstance(value, str | int | float | Decimal):
             return value
@@ -198,6 +199,7 @@ class DaphneSensor(SensorEntity):
     """A Daphne sensor backed by the bulk-read coordinator."""
 
     coordinator: DaphneHRVCoordinator
+    entity_description: SensorEntityDescription
     _description: DaphneSensorDescription
 
     def __init__(
@@ -209,12 +211,12 @@ class DaphneSensor(SensorEntity):
         self.coordinator = coordinator
         self.entity_description = cast(SensorEntityDescription, description)
         self._description = description
-        self._attr_has_entity_name = True
-        self._attr_should_poll = False
-        self._attr_available = coordinator.last_update_success
+        self._attr_has_entity_name: bool = True
+        self._attr_should_poll: bool = False
+        self._attr_available: bool = coordinator.last_update_success
         entry = coordinator.config_entry
-        self._attr_unique_id = f"{entry.entry_id}_{description.key}"
-        self._attr_device_info = DeviceInfo(
+        self._attr_unique_id: str | None = f"{entry.entry_id}_{description.key}"
+        self._attr_device_info: DeviceInfo | None = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name=entry.title,
             manufacturer=MANUFACTURER,
@@ -224,8 +226,11 @@ class DaphneSensor(SensorEntity):
         self._update_native_value()
 
     def _update_native_value(self) -> None:
-        self._attr_native_value = self._description.value_fn(self.coordinator.data or {})
+        self._attr_native_value: StateType | date | datetime | Decimal = (
+            self._description.value_fn(self.coordinator.data or {})
+        )
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to coordinator updates when Home Assistant adds the entity."""
         await super().async_added_to_hass()

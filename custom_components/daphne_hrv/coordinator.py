@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
-from typing import Any
+from typing import override
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
@@ -78,13 +78,16 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+type DaphneHRVValue = bool | float | int
+type DaphneHRVData = dict[str, DaphneHRVValue]
+
 
 def _to_int16(value: int) -> int:
     """Convert an unsigned 16-bit Modbus register value to signed int16."""
     return value - 0x10000 if value >= 0x8000 else value
 
 
-class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
     """Coordinator that bulk-reads all known Daphne registers per poll."""
 
     config_entry: ConfigEntry
@@ -101,10 +104,12 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._host: str = entry.data[CONF_HOST]
         self._port: int = entry.data[CONF_PORT]
         self._slave: int = entry.data.get(CONF_SLAVE, DEFAULT_SLAVE)
-        self._client = AsyncModbusTcpClient(host=self._host, port=self._port)
+        self._client: AsyncModbusTcpClient = AsyncModbusTcpClient(
+            host=self._host, port=self._port
+        )
         # Serialise all Modbus operations - pymodbus 3.x clients are not
         # safe for concurrent calls on the same TCP socket.
-        self._lock = asyncio.Lock()
+        self._lock: asyncio.Lock = asyncio.Lock()
 
     @property
     def host(self) -> str:
@@ -116,6 +121,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Return the configured Modbus slave/unit ID."""
         return self._slave
 
+    @override
     async def _async_setup(self) -> None:
         """Open the TCP connection on first refresh.
 
@@ -127,17 +133,19 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 f"Cannot connect to Daphne at {self._host}:{self._port}"
             )
 
+    @override
     async def async_shutdown(self) -> None:
         """Close the Modbus connection on entry unload."""
         await super().async_shutdown()
         self._client.close()
 
-    async def _async_update_data(self) -> dict[str, Any]:
+    @override
+    async def _async_update_data(self) -> DaphneHRVData:
         """Bulk-read all configured registers and return a parsed dict."""
         async with self._lock:
             try:
                 if not self._client.connected:
-                    await self._client.connect()
+                    _ = await self._client.connect()
 
                 inputs_15k = await self._read_input_registers(
                     INPUT_BLOCK_15K_START, INPUT_BLOCK_15K_COUNT
@@ -178,7 +186,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         inputs_18k: list[int],
         h21k: list[int],
         h25k: list[int],
-    ) -> dict[str, Any]:
+    ) -> DaphneHRVData:
         """Map the three raw register blocks into the coordinator data dict."""
 
         def i15(reg: int) -> int:
@@ -227,7 +235,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         async with self._lock:
             try:
                 if not self._client.connected:
-                    await self._client.connect()
+                    _ = await self._client.connect()
                 result = await self._client.write_register(
                     address=address, value=value, device_id=self._slave
                 )
