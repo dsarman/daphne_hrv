@@ -40,7 +40,7 @@ REG_FILTER_WEAR: Final = 18016  # uint16, 0-100 %
 # Holding registers (function code 0x03 read / 0x06 write)
 REG_POWER: Final = 21000  # bool: 0=off, 1=on
 REG_FAN_SPEED: Final = 21001  # uint16: 0-1000 ‰ (we expose as 0-100 %)
-REG_TEMP_SETPOINT: Final = 21003  # int16: °C
+REG_TEMP_SETPOINT: Final = 21002  # int16: °C
 REG_NIGHT_MODE: Final = 21009  # bool: 0=day, 1=night
 REG_FILTER_HOURS: Final = 25018  # uint16: hours
 REG_FILTER_HOURS_LIMIT: Final = 25019  # uint16: hours
