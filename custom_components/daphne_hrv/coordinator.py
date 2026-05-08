@@ -195,7 +195,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         return {
             # Status / diagnostics
-            DATA_STATUS_WORD: i18(REG_STATUS_WORD),
+            DATA_STATUS_WORD: i15(REG_STATUS_WORD),
             DATA_ERROR_WORD: i18(REG_ERROR_WORD),
             DATA_SENSOR_STATUS: i18(REG_SENSOR_STATUS),
             DATA_BYPASS_POSITION: i15(REG_BYPASS_POSITION),

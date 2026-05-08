@@ -23,14 +23,14 @@ CONF_SLAVE: Final = "slave"
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Input registers (function code 0x04, read-only)
+REG_STATUS_WORD: Final = 15007  # STATUS_AHU Status_DO; bit 2 = run indication
 REG_BYPASS_POSITION: Final = 15040  # uint16, 0-100 % (STATUS_AHU)
-REG_STATUS_WORD: Final = 18000  # bitmask: bit 0 = unit running
 REG_ERROR_WORD: Final = 18001  # bitmask: any non-zero = error
 REG_SENSOR_STATUS: Final = 18003  # bitmask: bit per sensor OK/ERROR
 REG_EXHAUST_TEMP: Final = 18005  # int16, ÷10 → °C (exhaust going outside)
 REG_OUTDOOR_TEMP: Final = 18006  # int16, ÷10 → °C
-REG_EXTRACT_TEMP: Final = 18007  # int16, ÷10 → °C (extract from rooms)
-REG_SUPPLY_TEMP: Final = 18008  # int16, ÷10 → °C (supply into house)
+REG_SUPPLY_TEMP: Final = 18007  # int16, ÷10 → °C (supply into house)
+REG_EXTRACT_TEMP: Final = 18008  # int16, ÷10 → °C (extract from rooms)
 REG_WATER_RETURN_TEMP: Final = 18010  # int16, ÷10 → °C (only if water heater)
 REG_ROOM_TEMP: Final = 18011  # int16, ÷10 → °C (only if CT-ROOM sensor)
 REG_HEATER_OUTPUT: Final = 18013  # uint16, 0-100 %
@@ -48,14 +48,14 @@ REG_FILTER_HOURS_LIMIT: Final = 25019  # uint16: hours
 # ─────────────────────────────────────────────────────────────────────────────
 # Bulk read configuration. The coordinator reads two contiguous register
 # blocks per cycle to minimise TCP round-trips:
-#   - Input 15k:    15040..15040 (1 reg)
+#   - Input 15k:    15007..15040 (34 regs)
 #   - Input 18k:    18000..18016 (17 regs)
 #   - Holding 21k:  21000..21009 (10 regs)
 #   - Holding 25k:  25018..25019 (2 regs)
 # ─────────────────────────────────────────────────────────────────────────────
 
-INPUT_BLOCK_15K_START: Final = 15040
-INPUT_BLOCK_15K_COUNT: Final = 1
+INPUT_BLOCK_15K_START: Final = 15007
+INPUT_BLOCK_15K_COUNT: Final = 34
 
 INPUT_BLOCK_18K_START: Final = 18000
 INPUT_BLOCK_18K_COUNT: Final = 17
@@ -67,12 +67,13 @@ HOLDING_BLOCK_25K_START: Final = 25018
 HOLDING_BLOCK_25K_COUNT: Final = 2
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Status-word bit definitions. Bit 0 (running) is empirically verified against
-# a real unit. Other bits remain best-guess until validated; we expose the raw
-# status word as a sensor so users can decode their own.
+# Status-word bit definitions. Running is AirGENIO STATUS_AHU Status_DO bit 2,
+# empirically verified against a real unit. Other bits remain best-guess until
+# validated; we expose the raw status word as a sensor so users can decode their
+# own.
 # ─────────────────────────────────────────────────────────────────────────────
 
-STATUS_BIT_RUNNING: Final = 1 << 0  # 0x0001 — verified
+STATUS_BIT_RUNNING: Final = 1 << 2  # 0x0004 — verified
 
 # Coordinator data keys (kept in one place to avoid typos across platforms).
 DATA_STATUS_WORD: Final = "status_word"
