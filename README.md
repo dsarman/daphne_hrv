@@ -2,17 +2,18 @@
 
 A Home Assistant custom integration for **[2VV Daphne](https://www.2vv.cz/en/products/daphne/)** heat-recovery ventilation units, controlled over **Modbus TCP** through the unit's built-in AirGENIO controller.
 
-> **Status:** v0.1 — core entities only. No external add-ons or YAML required; configures from the UI.
+> **Status:** v0.2 — core entities, temperature-control source selection, and decoded diagnostics. No external add-ons or YAML required; configures from the UI.
 
 ## Features
 
 - **Power switch** — turn the unit on/off
 - **Fan speed** — 0–100 % slider (the unit's native 0–1000 ‰ range, scaled)
 - **Temperature setpoint** — 10–30 °C
+- **Temperature control source** — choose supply duct, extract duct, room, thermostat, or room BMS
 - **Night mode** switch
 - **Sensors** — outdoor / supply / exhaust / extract / room / water-return temperatures, filter wear & hours, heater output
 - **Diagnostics** — running state, error state, raw status registers for advanced bitmask decoding
-- Single-poll coordinator (one bulk Modbus read per cycle, ~3 round-trips total)
+- Single-poll coordinator (four Modbus block reads per cycle)
 - Local polling, no cloud
 
 ## Requirements
@@ -56,13 +57,22 @@ The integration will probe the connection during setup; if it fails, check the I
 - **AirGENIO SUPERIOR** (module-A): native Modbus TCP, plug Ethernet into the controller's RJ45 and you're done. Default IP `192.168.0.100`.
 - **AirGENIO COMFORT** (module-B): RS-485 only at 9600/8/ODD/1. Use a transparent TCP gateway (Waveshare RS485-to-ETH, USR-TCP232, etc.) — point it at the controller's RS-485 terminals (B=pin25, A=pin24, GND=pin23) and configure this integration with the gateway's IP.
 
+## Temperature control source
+
+The temperature control source select writes holding register `25008`:
+
+- `0` — supply duct
+- `1` — extract duct
+- `2` — room
+- `3` — thermostat
+- `4` — room BMS
+
 ## Status-word decoding
 
-The Daphne exposes some state as bitmasks in registers `18000` (`status_word`) and `18003` (`sensor_status`). Bit 0 of `status_word` is verified as **running**. Other bits are not yet documented for this firmware — capture the raw value while toggling features on the controller and share your findings via an issue/PR.
+The Daphne exposes state as bitmasks in `15007` (`status_word`), `18001` (`error_word`) and `18003` (`sensor_status`). `status_word` bit 2 is verified as **running**. The integration also exposes decoded diagnostic binary sensors for documented status and temperature-sensor problem bits, while keeping the raw word sensors available for validation.
 
 ## Roadmap
 
-- v0.2: `select` entity for temperature-control source, decoded bitmask binary sensors
 - v0.3: `climate` entity (once mode register behaviour is validated)
 - v0.4: BMS outdoor-temp override, schedules
 - v1.0: HACS default store submission

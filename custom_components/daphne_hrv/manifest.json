@@ -1,7 +1,7 @@
 {
   "domain": "daphne_hrv",
   "name": "2VV Daphne HRV",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "codeowners": ["@dsarman"],
   "config_flow": true,
   "documentation": "https://github.com/dsarman/daphne_hrv",

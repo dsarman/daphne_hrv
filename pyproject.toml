@@ -1,6 +1,6 @@
 [project]
 name = "daphne-hrv"
-version = "0.1.0"
+version = "0.2.0"
 description = "2VV Daphne HRV Home Assistant custom integration"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"

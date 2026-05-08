@@ -1,8 +1,8 @@
 """DataUpdateCoordinator for the 2VV Daphne HRV.
 
-Performs three bulk Modbus reads per polling cycle (input registers and two
-disjoint holding-register blocks) and exposes the parsed values as a
-dictionary keyed by ``DATA_*`` constants from :mod:`.const`.
+Performs four Modbus block reads per polling cycle (two input-register blocks
+and two holding-register blocks) and exposes the parsed values as a dictionary
+keyed by ``DATA_*`` constants from :mod:`.const`.
 """
 
 from __future__ import annotations
@@ -41,6 +41,7 @@ from .const import (
     DATA_ROOM_TEMP,
     DATA_SENSOR_STATUS,
     DATA_STATUS_WORD,
+    DATA_TEMP_SENSOR_SELECTION,
     DATA_SUPPLY_TEMP,
     DATA_TEMP_SETPOINT,
     DATA_WATER_RETURN_TEMP,
@@ -73,6 +74,7 @@ from .const import (
     REG_STATUS_WORD,
     REG_SUPPLY_TEMP,
     REG_TEMP_SETPOINT,
+    REG_TEMP_SENSOR_SELECTION,
     REG_WATER_RETURN_TEMP,
 )
 
@@ -187,7 +189,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
         h21k: list[int],
         h25k: list[int],
     ) -> DaphneHRVData:
-        """Map the three raw register blocks into the coordinator data dict."""
+        """Map the raw register blocks into the coordinator data dict."""
 
         def i15(reg: int) -> int:
             return inputs_15k[reg - INPUT_BLOCK_15K_START]
@@ -223,6 +225,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
             DATA_FAN_SPEED: h21(REG_FAN_SPEED) / 10.0,  # ‰ → %
             DATA_TEMP_SETPOINT: _to_int16(h21(REG_TEMP_SETPOINT)),
             DATA_NIGHT_MODE: bool(h21(REG_NIGHT_MODE)),
+            DATA_TEMP_SENSOR_SELECTION: h25(REG_TEMP_SENSOR_SELECTION),
             # Filter counters
             DATA_FILTER_HOURS: h25(REG_FILTER_HOURS),
             DATA_FILTER_HOURS_LIMIT: h25(REG_FILTER_HOURS_LIMIT),
@@ -263,3 +266,7 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
     async def async_set_temp_setpoint(self, value: float) -> None:
         """Write the temperature setpoint in whole degrees Celsius."""
         await self.async_write_register(REG_TEMP_SETPOINT, int(round(value)))
+
+    async def async_set_temp_sensor_selection(self, value: int) -> None:
+        """Select which sensor AirGENIO uses for temperature regulation."""
+        await self.async_write_register(REG_TEMP_SENSOR_SELECTION, value)

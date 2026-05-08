@@ -24,7 +24,16 @@
   "entity": {
     "binary_sensor": {
       "running": { "name": "Running" },
-      "error": { "name": "Error" }
+      "error": { "name": "Error" },
+      "error_indication": { "name": "Error indication" },
+      "exchanger_heating": { "name": "Exchanger heating" },
+      "water_pump": { "name": "Water pump" },
+      "outdoor_sensor_problem": { "name": "Outdoor temperature sensor problem" },
+      "exhaust_sensor_problem": { "name": "Outgoing air temperature sensor problem" },
+      "supply_sensor_problem": { "name": "Supply air temperature sensor problem" },
+      "water_return_sensor_problem": { "name": "Water return temperature sensor problem" },
+      "room_sensor_problem": { "name": "Room temperature sensor problem" },
+      "bms_sensor_problem": { "name": "BMS temperature sensor problem" }
     },
     "sensor": {
       "outdoor_temp": { "name": "Outside air temperature" },
@@ -50,6 +59,18 @@
     "number": {
       "fan_speed": { "name": "Fan speed" },
       "temp_setpoint": { "name": "Temperature setpoint" }
+    },
+    "select": {
+      "temp_sensor_selection": {
+        "name": "Temperature control source",
+        "state": {
+          "supply_duct": "Supply duct",
+          "extract_duct": "Extract duct",
+          "room": "Room",
+          "thermostat": "Thermostat",
+          "room_bms": "Room BMS"
+        }
+      }
     }
   }
 }

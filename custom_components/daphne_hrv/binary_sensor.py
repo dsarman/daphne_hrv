@@ -19,11 +19,21 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import DaphneHRVConfigEntry
 from .const import (
     DATA_ERROR_WORD,
+    DATA_SENSOR_STATUS,
     DATA_STATUS_WORD,
     DOMAIN,
     MANUFACTURER,
     MODEL,
+    SENSOR_STATUS_BIT_BMS,
+    SENSOR_STATUS_BIT_EXHAUST,
+    SENSOR_STATUS_BIT_OUTDOOR,
+    SENSOR_STATUS_BIT_ROOM,
+    SENSOR_STATUS_BIT_SUPPLY,
+    SENSOR_STATUS_BIT_WATER_RETURN,
+    STATUS_BIT_ERROR_INDICATION,
+    STATUS_BIT_EXCHANGER_HEATING,
     STATUS_BIT_RUNNING,
+    STATUS_BIT_WATER_PUMP,
 )
 from .coordinator import DaphneHRVCoordinator, DaphneHRVData
 
@@ -45,6 +55,22 @@ def _status_bit_is_set(key: str, bit: int) -> Callable[[DaphneHRVData], bool]:
     return _read
 
 
+def _status_bit_problem(key: str, bit: int) -> Callable[[DaphneHRVData], bool]:
+    """Return a predicate that treats a set bit as a diagnostic problem."""
+
+    return _status_bit_is_set(key, bit)
+
+
+def _nonzero_value(key: str) -> Callable[[DaphneHRVData], bool]:
+    """Return a predicate that is true when an integer value is non-zero."""
+
+    def _read(data: DaphneHRVData) -> bool:
+        value = data.get(key)
+        return isinstance(value, int) and value != 0
+
+    return _read
+
+
 BINARY_SENSORS: tuple[DaphneBinarySensorDescription, ...] = (
     DaphneBinarySensorDescription(
         key="running",
@@ -57,7 +83,70 @@ BINARY_SENSORS: tuple[DaphneBinarySensorDescription, ...] = (
         translation_key="error",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda d: (d.get(DATA_ERROR_WORD) or 0) != 0,
+        is_on_fn=_nonzero_value(DATA_ERROR_WORD),
+    ),
+    DaphneBinarySensorDescription(
+        key="error_indication",
+        translation_key="error_indication",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_is_set(DATA_STATUS_WORD, STATUS_BIT_ERROR_INDICATION),
+    ),
+    DaphneBinarySensorDescription(
+        key="exchanger_heating",
+        translation_key="exchanger_heating",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_is_set(DATA_STATUS_WORD, STATUS_BIT_EXCHANGER_HEATING),
+    ),
+    DaphneBinarySensorDescription(
+        key="water_pump",
+        translation_key="water_pump",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_is_set(DATA_STATUS_WORD, STATUS_BIT_WATER_PUMP),
+    ),
+    DaphneBinarySensorDescription(
+        key="outdoor_sensor_problem",
+        translation_key="outdoor_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_OUTDOOR),
+    ),
+    DaphneBinarySensorDescription(
+        key="exhaust_sensor_problem",
+        translation_key="exhaust_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_EXHAUST),
+    ),
+    DaphneBinarySensorDescription(
+        key="supply_sensor_problem",
+        translation_key="supply_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_SUPPLY),
+    ),
+    DaphneBinarySensorDescription(
+        key="water_return_sensor_problem",
+        translation_key="water_return_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(
+            DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_WATER_RETURN
+        ),
+    ),
+    DaphneBinarySensorDescription(
+        key="room_sensor_problem",
+        translation_key="room_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_ROOM),
+    ),
+    DaphneBinarySensorDescription(
+        key="bms_sensor_problem",
+        translation_key="bms_sensor_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=_status_bit_problem(DATA_SENSOR_STATUS, SENSOR_STATUS_BIT_BMS),
     ),
 )
 
