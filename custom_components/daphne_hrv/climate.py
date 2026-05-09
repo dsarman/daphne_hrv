@@ -18,6 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import DaphneHRVConfigEntry
 from .const import (
     DATA_EXTRACT_TEMP,
+    DATA_FAN_SPEED,
     DATA_HEATER_OUTPUT,
     DATA_POWER,
     DATA_ROOM_TEMP,
@@ -32,6 +33,14 @@ from .const import (
     TEMP_SENSOR_SELECTION_SUPPLY,
 )
 from .coordinator import DaphneHRVCoordinator, DaphneHRVData
+
+FAN_MODE_STEP: int = 5
+FAN_MODE_BY_PERCENT: dict[int, str] = {
+    percent: f"{percent}%" for percent in range(0, 101, FAN_MODE_STEP)
+}
+FAN_PERCENT_BY_MODE: dict[str, int] = {
+    mode: percent for percent, mode in FAN_MODE_BY_PERCENT.items()
+}
 
 CURRENT_TEMP_KEY_BY_SOURCE: dict[int, str] = {
     TEMP_SENSOR_SELECTION_SUPPLY: DATA_SUPPLY_TEMP,
@@ -70,9 +79,11 @@ class DaphneClimate(ClimateEntity):
     _attr_target_temperature_step: float | None = 1.0
     _attr_min_temp: float = 10.0
     _attr_max_temp: float = 30.0
+    _attr_fan_modes: list[str] | None = list(FAN_PERCENT_BY_MODE)
     _attr_hvac_modes: list[HVACMode] = [HVACMode.OFF, HVACMode.AUTO]
     _attr_supported_features: ClimateEntityFeature = (
         ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.FAN_MODE
         | ClimateEntityFeature.TURN_OFF
         | ClimateEntityFeature.TURN_ON
     )
@@ -106,6 +117,7 @@ class DaphneClimate(ClimateEntity):
         )
         self._attr_current_temperature: float | None = self._current_temperature(data)
         self._attr_hvac_action: HVACAction | None = self._hvac_action(data, is_powered)
+        self._attr_fan_mode: str | None = self._fan_mode(data)
 
     @staticmethod
     def _current_temperature(data: DaphneHRVData) -> float | None:
@@ -121,6 +133,15 @@ class DaphneClimate(ClimateEntity):
             return HVACAction.OFF
         heater_output = _float_value(data, DATA_HEATER_OUTPUT)
         return HVACAction.HEATING if heater_output is not None and heater_output > 0 else HVACAction.IDLE
+
+    @staticmethod
+    def _fan_mode(data: DaphneHRVData) -> str | None:
+        fan_speed = _float_value(data, DATA_FAN_SPEED)
+        if fan_speed is None:
+            return None
+        rounded_percent = int(round(fan_speed / FAN_MODE_STEP) * FAN_MODE_STEP)
+        clamped_percent = max(0, min(100, rounded_percent))
+        return FAN_MODE_BY_PERCENT[clamped_percent]
 
     @override
     async def async_added_to_hass(self) -> None:
@@ -156,6 +177,14 @@ class DaphneClimate(ClimateEntity):
         if not isinstance(temperature, int | float) or isinstance(temperature, bool):
             raise ValueError("Temperature is required")
         await self.coordinator.async_set_temp_setpoint(float(temperature))
+
+    @override
+    async def async_set_fan_mode(self, fan_mode: str) -> None:
+        """Set the fan speed from a climate fan mode."""
+        percent = FAN_PERCENT_BY_MODE.get(fan_mode)
+        if percent is None:
+            raise ValueError(f"Unsupported fan mode: {fan_mode}")
+        await self.coordinator.async_set_fan_speed_percent(percent)
 
     @override
     async def async_turn_on(self) -> None:

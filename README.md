@@ -2,12 +2,10 @@
 
 A Home Assistant custom integration for **[2VV Daphne](https://www.2vv.cz/en/products/daphne/)** heat-recovery ventilation units, controlled over **Modbus TCP** through the unit's built-in AirGENIO controller.
 
-> **Status:** v0.3 — includes the main temperature-control climate entity. No external add-ons or YAML required; configures from the UI.
-
 ## Features
 
 - **Power switch** — turn the unit on/off
-- **Climate entity** — control unit power and target temperature from Home Assistant's climate UI
+- **Climate entity** — control unit power, target temperature, and fan speed from Home Assistant's climate UI
 - **Fan speed** — 0–100 % slider (the unit's native 0–1000 ‰ range, scaled)
 - **Temperature setpoint** — 10–30 °C
 - **Temperature control source** — choose supply duct, extract duct, room, thermostat, or room BMS
@@ -76,17 +74,15 @@ The climate entity intentionally exposes only validated controls:
 - `AUTO` turns the unit on through holding register `21000`.
 - Target temperature writes the confirmed setpoint register `21002` in whole °C.
 - Current temperature follows the selected temperature-control source when that source has a readable temperature sensor.
+- Fan mode exposes the existing validated fan-speed control as 5% steps (`0%`, `5%`, …, `100%`) and writes the confirmed fan-speed register `21001`.
+
+The separate fan-speed number entity remains available for dashboards or automations that prefer a slider.
 
 The AirGENIO automatic/manual temperature-control mode register is documented as PLC `H:25033` / raw `H:25032`, but this integration does not write it yet because mode-write behaviour has not been validated on the live unit.
 
 ## Status-word decoding
 
 The Daphne exposes state as bitmasks in `15007` (`status_word`), `18001` (`error_word`) and `18003` (`sensor_status`). `status_word` bit 2 is verified as **running**. The integration also exposes decoded diagnostic binary sensors for documented status and temperature-sensor problem bits, while keeping the raw word sensors available for validation.
-
-## Roadmap
-
-- v0.4: BMS outdoor-temp override, schedules
-- v1.0: HACS default store submission
 
 ## Disclaimer
 
