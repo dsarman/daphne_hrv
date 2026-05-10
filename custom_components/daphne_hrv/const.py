@@ -120,3 +120,7 @@ DATA_NIGHT_MODE: Final = "night_mode"
 DATA_TEMP_SENSOR_SELECTION: Final = "temp_sensor_selection"
 DATA_FILTER_HOURS: Final = "filter_hours"
 DATA_FILTER_HOURS_LIMIT: Final = "filter_hours_limit"
+
+MIN_FAN_SPEED_PERCENT: Final = 20
+MAX_FAN_SPEED_PERCENT: Final = 100
+FAN_SPEED_STEP_PERCENT: Final = 5

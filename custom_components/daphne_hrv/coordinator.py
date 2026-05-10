@@ -56,6 +56,8 @@ from .const import (
     INPUT_BLOCK_15K_START,
     INPUT_BLOCK_18K_COUNT,
     INPUT_BLOCK_18K_START,
+    MAX_FAN_SPEED_PERCENT,
+    MIN_FAN_SPEED_PERCENT,
     REG_BYPASS_POSITION,
     REG_ERROR_WORD,
     REG_EXHAUST_TEMP,
@@ -259,8 +261,11 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
         await self.async_write_register(REG_NIGHT_MODE, 1 if on else 0)
 
     async def async_set_fan_speed_percent(self, percent: float) -> None:
-        """Write fan speed as 0-100 %, scaling to the unit's 0-1000 ‰ range."""
-        clamped = max(0.0, min(100.0, float(percent)))
+        """Write fan speed as percent, scaling to the unit's 0-1000 ‰ range."""
+        clamped = max(
+            float(MIN_FAN_SPEED_PERCENT),
+            min(float(MAX_FAN_SPEED_PERCENT), float(percent)),
+        )
         await self.async_write_register(REG_FAN_SPEED, int(round(clamped * 10)))
 
     async def async_set_temp_setpoint(self, value: float) -> None:

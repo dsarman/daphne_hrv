@@ -26,7 +26,10 @@ from .const import (
     DATA_TEMP_SENSOR_SELECTION,
     DATA_TEMP_SETPOINT,
     DOMAIN,
+    FAN_SPEED_STEP_PERCENT,
+    MAX_FAN_SPEED_PERCENT,
     MANUFACTURER,
+    MIN_FAN_SPEED_PERCENT,
     MODEL,
     TEMP_SENSOR_SELECTION_EXTRACT,
     TEMP_SENSOR_SELECTION_ROOM,
@@ -34,9 +37,13 @@ from .const import (
 )
 from .coordinator import DaphneHRVCoordinator, DaphneHRVData
 
-FAN_MODE_STEP: int = 5
 FAN_MODE_BY_PERCENT: dict[int, str] = {
-    percent: f"{percent}%" for percent in range(0, 101, FAN_MODE_STEP)
+    percent: f"{percent}%"
+    for percent in range(
+        MIN_FAN_SPEED_PERCENT,
+        MAX_FAN_SPEED_PERCENT + 1,
+        FAN_SPEED_STEP_PERCENT,
+    )
 }
 FAN_PERCENT_BY_MODE: dict[str, int] = {
     mode: percent for percent, mode in FAN_MODE_BY_PERCENT.items()
@@ -139,8 +146,12 @@ class DaphneClimate(ClimateEntity):
         fan_speed = _float_value(data, DATA_FAN_SPEED)
         if fan_speed is None:
             return None
-        rounded_percent = int(round(fan_speed / FAN_MODE_STEP) * FAN_MODE_STEP)
-        clamped_percent = max(0, min(100, rounded_percent))
+        rounded_percent = int(
+            round(fan_speed / FAN_SPEED_STEP_PERCENT) * FAN_SPEED_STEP_PERCENT
+        )
+        clamped_percent = max(
+            MIN_FAN_SPEED_PERCENT, min(MAX_FAN_SPEED_PERCENT, rounded_percent)
+        )
         return FAN_MODE_BY_PERCENT[clamped_percent]
 
     @override

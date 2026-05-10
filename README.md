@@ -6,7 +6,7 @@ A Home Assistant custom integration for **[2VV Daphne](https://www.2vv.cz/en/pro
 
 - **Power switch** — turn the unit on/off
 - **Climate entity** — control unit power, target temperature, and fan speed from Home Assistant's climate UI
-- **Fan speed** — 0–100 % slider (the unit's native 0–1000 ‰ range, scaled)
+- **Fan speed** — 20–100 % slider (the unit's native 0–1000 ‰ range, scaled)
 - **Temperature setpoint** — 10–30 °C
 - **Temperature control source** — choose supply duct, extract duct, room, thermostat, or room BMS
 - **Night mode** switch
@@ -74,7 +74,7 @@ The climate entity intentionally exposes only validated controls:
 - `AUTO` turns the unit on through holding register `21000`.
 - Target temperature writes the confirmed setpoint register `21002` in whole °C.
 - Current temperature follows the selected temperature-control source when that source has a readable temperature sensor.
-- Fan mode exposes the existing validated fan-speed control as 5% steps (`0%`, `5%`, …, `100%`) and writes the confirmed fan-speed register `21001`.
+- Fan mode exposes the existing validated fan-speed control as 5% steps (`20%`, `25%`, …, `100%`) and writes the confirmed fan-speed register `21001`.
 
 The separate fan-speed number entity remains available for dashboards or automations that prefer a slider.
 

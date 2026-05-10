@@ -22,7 +22,9 @@ from .const import (
     DATA_FAN_SPEED,
     DATA_TEMP_SETPOINT,
     DOMAIN,
+    MAX_FAN_SPEED_PERCENT,
     MANUFACTURER,
+    MIN_FAN_SPEED_PERCENT,
     MODEL,
 )
 from .coordinator import DaphneHRVCoordinator, DaphneHRVData
@@ -41,8 +43,8 @@ NUMBERS: tuple[DaphneNumberDescription, ...] = (
         key="fan_speed",
         translation_key="fan_speed",
         native_unit_of_measurement=PERCENTAGE,
-        native_min_value=0,
-        native_max_value=100,
+        native_min_value=MIN_FAN_SPEED_PERCENT,
+        native_max_value=MAX_FAN_SPEED_PERCENT,
         native_step=5,
         mode=NumberMode.SLIDER,
         value_fn=lambda d: d.get(DATA_FAN_SPEED),
