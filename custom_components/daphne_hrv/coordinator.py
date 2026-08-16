@@ -213,7 +213,8 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
             DATA_BYPASS_POSITION: i15(REG_BYPASS_POSITION),
             # Temperatures (signed, ÷10 → °C)
             DATA_OUTDOOR_TEMP: _to_int16(i18(REG_OUTDOOR_TEMP)) / 10.0,
-            DATA_EXHAUST_TEMP: _to_int16(i18(REG_EXHAUST_TEMP)) / 10.0,
+            # Exhaust comes from the 15k STATUS_AHU block, not 18k - see const.py.
+            DATA_EXHAUST_TEMP: _to_int16(i15(REG_EXHAUST_TEMP)) / 10.0,
             DATA_SUPPLY_TEMP: _to_int16(i18(REG_SUPPLY_TEMP)) / 10.0,
             DATA_EXTRACT_TEMP: _to_int16(i18(REG_EXTRACT_TEMP)) / 10.0,
             DATA_WATER_RETURN_TEMP: _to_int16(i18(REG_WATER_RETURN_TEMP)) / 10.0,

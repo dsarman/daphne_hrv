@@ -24,10 +24,30 @@ CONF_SLAVE: Final = "slave"
 
 # Input registers (function code 0x04, read-only)
 REG_STATUS_WORD: Final = 15007  # STATUS_AHU Status_DO; bit 2 = run indication
+# Exhaust air (leaving the house, after the heat exchanger). Lives in the 15k
+# STATUS_AHU block, NOT alongside the other temperatures in 18k — the 18k block
+# is a re-ordered subset of 15k and simply has no exhaust entry (18009 reads a
+# constant 0 while REG_SENSOR_STATUS reports the exhaust sensor healthy).
+#
+# INFERRED, NOT YET VERIFIED against the controller display. Basis, measured on
+# a live unit at outdoor 30.8 / supply 29.0 / extract 27.4 °C:
+#   - 15017 = 28.1 °C is the only unclaimed temperature adjacent to the three
+#     confirmed ones (15016 outdoor, 15018 supply, 15021 extract).
+#   - Heat balance: the supply stream drops 1.8 K across the exchanger, so the
+#     extract stream should gain ~the same, 27.4 → ~29.2. 28.1 sits in that band.
+#   - With REG_HEATER_OUTPUT at 0 a post-exchanger supply probe would have to
+#     read exactly supply (29.0); 15017 does not, so it is a separate air stream.
+#   - 15022 = 30.4 °C was rejected: exhaust cannot exceed the 30.8 °C intake it
+#     is warming.
+# To confirm, compare this sensor against the exhaust temperature shown on the
+# AirGENIO panel and update this comment to "verified".
+REG_EXHAUST_TEMP: Final = 15017  # int16, ÷10 → °C (exhaust going outside)
 REG_BYPASS_POSITION: Final = 15040  # uint16, 0-100 % (STATUS_AHU)
 REG_ERROR_WORD: Final = 18001  # bitmask: any non-zero = error
 REG_SENSOR_STATUS: Final = 18003  # bitmask: bit per sensor OK/ERROR
-REG_EXHAUST_TEMP: Final = 18005  # int16, ÷10 → °C (exhaust going outside)
+# 18005 is NOT a temperature: it mirrors the airflow/fan value (0-1000 ‰), so
+# reading it as a ÷10 temperature renders as the current fan speed. Verified on
+# a live unit: 18005 == 200 while REG_FAN_SPEED (H:21001) == 200 ‰.
 REG_OUTDOOR_TEMP: Final = 18006  # int16, ÷10 → °C
 REG_SUPPLY_TEMP: Final = 18007  # int16, ÷10 → °C (supply into house)
 REG_EXTRACT_TEMP: Final = 18008  # int16, ÷10 → °C (extract from rooms)
