@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import override, cast
+from typing import cast, override
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -15,15 +15,15 @@ from homeassistant.components.number import (
 from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DaphneHRVConfigEntry
 from .const import (
     DATA_FAN_SPEED,
     DATA_TEMP_SETPOINT,
     DOMAIN,
-    MAX_FAN_SPEED_PERCENT,
     MANUFACTURER,
+    MAX_FAN_SPEED_PERCENT,
     MIN_FAN_SPEED_PERCENT,
     MODEL,
 )
@@ -68,7 +68,7 @@ NUMBERS: tuple[DaphneNumberDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: DaphneHRVConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Daphne HRV number entities from a config entry."""
     _ = hass

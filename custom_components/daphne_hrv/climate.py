@@ -13,7 +13,7 @@ from homeassistant.components.climate.const import (
 from homeassistant.const import ATTR_TEMPERATURE, PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DaphneHRVConfigEntry
 from .const import (
@@ -27,8 +27,8 @@ from .const import (
     DATA_TEMP_SETPOINT,
     DOMAIN,
     FAN_SPEED_STEP_PERCENT,
-    MAX_FAN_SPEED_PERCENT,
     MANUFACTURER,
+    MAX_FAN_SPEED_PERCENT,
     MIN_FAN_SPEED_PERCENT,
     MODEL,
     TEMP_SENSOR_SELECTION_EXTRACT,
@@ -59,7 +59,7 @@ CURRENT_TEMP_KEY_BY_SOURCE: dict[int, str] = {
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: DaphneHRVConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Daphne HRV climate entity from a config entry."""
     _ = hass

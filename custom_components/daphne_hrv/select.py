@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import override, cast
+from typing import cast, override
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DaphneHRVConfigEntry
 from .const import (
@@ -56,7 +56,7 @@ SELECTS: tuple[DaphneSelectDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: DaphneHRVConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Daphne HRV select entities from a config entry."""
     _ = hass

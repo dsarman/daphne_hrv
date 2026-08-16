@@ -19,7 +19,7 @@ A Home Assistant custom integration for **[2VV Daphne](https://www.2vv.cz/en/pro
 
 - A 2VV Daphne unit with the **AirGENIO SUPERIOR / IC / SC (module-A)** control board (native Modbus TCP via RJ45). Verify by entering service code `1616` on the controller — if menu **21 - Network** exists, you have the right board.
 - The unit's IP address (configurable in the same Network menu)
-- Home Assistant **2024.10** or newer
+- Home Assistant **2025.3** or newer (verified against 2026.8)
 
 If you have the **COMFORT (module-B)** board instead, you only have RS-485 (no native TCP). You can still use this integration via a Modbus RTU-to-TCP gateway (e.g. Waveshare RS485-to-ETH) — see [Hardware notes](#hardware-notes).
 

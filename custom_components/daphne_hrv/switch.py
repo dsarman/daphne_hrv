@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import override, cast
+from typing import cast, override
 
 from homeassistant.components.switch import (
     SwitchDeviceClass,
@@ -13,7 +13,7 @@ from homeassistant.components.switch import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DaphneHRVConfigEntry
 from .const import DATA_NIGHT_MODE, DATA_POWER, DOMAIN, MANUFACTURER, MODEL
@@ -58,7 +58,7 @@ SWITCHES: tuple[DaphneSwitchDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: DaphneHRVConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Daphne HRV switches from a config entry."""
     _ = hass
