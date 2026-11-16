@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from datetime import timedelta
 from typing import override
 
@@ -48,6 +49,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SLAVE,
     DOMAIN,
+    FAN_SPEED_STEP_PERCENT,
     HOLDING_BLOCK_21K_COUNT,
     HOLDING_BLOCK_21K_START,
     HOLDING_BLOCK_25K_COUNT,
@@ -262,12 +264,18 @@ class DaphneHRVCoordinator(DataUpdateCoordinator[DaphneHRVData]):
         await self.async_write_register(REG_NIGHT_MODE, 1 if on else 0)
 
     async def async_set_fan_speed_percent(self, percent: float) -> None:
-        """Write fan speed as percent, scaling to the unit's 0-1000 ‰ range."""
-        clamped = max(
-            float(MIN_FAN_SPEED_PERCENT),
-            min(float(MAX_FAN_SPEED_PERCENT), float(percent)),
+        """Write fan speed as percent, scaling to the unit's 0-1000 ‰ range.
+
+        The value is snapped to the nearest FAN_SPEED_STEP_PERCENT (halves round
+        up) before clamping, so a service call or scene carrying e.g. 35 cannot
+        put the unit on a speed its own controller does not offer.
+        """
+        snapped = (
+            math.floor(float(percent) / FAN_SPEED_STEP_PERCENT + 0.5)
+            * FAN_SPEED_STEP_PERCENT
         )
-        await self.async_write_register(REG_FAN_SPEED, int(round(clamped * 10)))
+        clamped = max(MIN_FAN_SPEED_PERCENT, min(MAX_FAN_SPEED_PERCENT, snapped))
+        await self.async_write_register(REG_FAN_SPEED, clamped * 10)
 
     async def async_set_temp_setpoint(self, value: float) -> None:
         """Write the temperature setpoint in whole degrees Celsius."""
